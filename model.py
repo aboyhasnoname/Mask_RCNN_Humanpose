@@ -1733,6 +1733,7 @@ def load_image_gt_keypoints(dataset, config, image_id, augment=True,
     # mask, class_ids = dataset.load_mask(image_id)
     shape = image.shape
     keypoints, mask, class_ids = dataset.load_keypoints(image_id)
+
     assert (config.NUM_KEYPOINTS == keypoints.shape[1])
 
     image, window, scale, padding = utils.resize_image(
@@ -1740,36 +1741,39 @@ def load_image_gt_keypoints(dataset, config, image_id, augment=True,
         min_dim=config.IMAGE_MIN_DIM,
         max_dim=config.IMAGE_MAX_DIM,
         padding=config.IMAGE_PADDING)
+
     mask = utils.resize_mask(mask, scale, padding)
+
     keypoints = utils.resize_keypoints(keypoints, image.shape[:2], scale, padding)
 
     # Random horizontal flips.
 
-    if augment:
-        if random.randint(0, 1):
-            image = np.fliplr(image)
-            mask = np.fliplr(mask)
-            keypoint_names,keypoint_flip_map = utils.get_keypoints()
-            keypoints = utils.flip_keypoints(keypoint_names,keypoint_flip_map,keypoints, image.shape[1])
+#     if augment:
+#         if random.randint(0, 1):
+#             image = np.fliplr(image)
+#             mask = np.fliplr(mask)
+#             keypoint_names,keypoint_flip_map = utils.get_keypoints()
+#             keypoints = utils.flip_keypoints(keypoint_names,keypoint_flip_map,keypoints, image.shape[1])
 
     # Bounding boxes. Note that some boxes might be all zeros
     # if the corresponding mask got cropped out.
     # bbox: [num_instances, (y1, x1, y2, x2)]
     # print("mask shape:",np.shape(mask))
     # print("keypoint mask shape:",np.shape(keypoint_mask))
-    bbox = utils.extract_bboxes(mask)
-
+#     bbox = utils.extract_bboxes(mask)
+    bbox = dataset.load_bbox(image_id)
 
     # Active classes
     # Different datasets have different classes, so track the
     # classes supported in the dataset of this image.
-    active_class_ids = np.zeros([dataset.num_classes], dtype=np.int32)
+    active_class_ids = np.ones([dataset.num_classes], dtype=np.int32)
     #all the class ids in the source
     # in keypoint detection task, source_class_ids = [0,1]
-    source_class_ids = dataset.source_class_ids[dataset.image_info[image_id]["source"]]
-    active_class_ids[source_class_ids] = 1
+#     source_class_ids = dataset.source_class_ids[dataset.image_info[image_id]["source"]]
+#     active_class_ids[source_class_ids] = 1
 
     # Resize masks to smaller size to reduce memory usage
+    use_mini_mask = False
     if use_mini_mask:
         mask = utils.minimize_mask(bbox, mask, config.MINI_MASK_SHAPE)
 
