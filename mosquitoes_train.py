@@ -20,7 +20,7 @@ import utils
 import model as modellib
 #import visualize
 from model import log
-dataset_dir = '/media/jm/000C65DB000784DF/workspace/ws_MaskRCNN/Mask_RCNN/samples/mosquitoes/data/'
+dataset_dir = r'C:\Users\Zed_Luz\OneDrive\3-MEE\18-JHU\12-Work\5-MosquitoRecog\7-data'#'/media/jm/000C65DB000784DF/workspace/ws_MaskRCNN/Mask_RCNN/samples/mosquitoes/data/'
 annotations = "via_region_data.json"
 
 class MosquitoesConfig(coco.Config):
@@ -57,7 +57,7 @@ class MosquitoesConfig(coco.Config):
     STEPS_PER_EPOCH = 1000
     WEIGHT_LOSS = True
     KEYPOINT_THRESHOLD = 0.005
-    
+
 config = MosquitoesConfig()
 config.display()
 
@@ -72,7 +72,7 @@ class MosquitoesDataset(utils.Dataset):
         # keypoint names
         # ["prob","head","tail"]
         self._keypoint_names = []
-        
+
     def load_dataset(self, dataset_dir, subset='train'):
         """Load a subset of the Balloon dataset.
         dataset_dir: Root directory of the dataset.
@@ -104,7 +104,7 @@ class MosquitoesDataset(utils.Dataset):
              annotations = json.load(open(os.path.join(dataset_dir, "annotations","train.json")))
         else:
              annotations = json.load(open(os.path.join(dataset_dir, "annotations","val.json")))
-       
+
         annotations = list(annotations.values())  # don't need the dict keys
 
         # The VIA tool saves images in the JSON even if they don't have any
@@ -128,14 +128,14 @@ class MosquitoesDataset(utils.Dataset):
                 if (index%5==0):
                     cl.append(attr['region_attributes']['class'])
                     bb.append([attr['shape_attributes']['y'], attr['shape_attributes']['x'], attr['shape_attributes']['height'], attr['shape_attributes']['width']])
-                    
+
                 elif (index%5==1):
                     pass
                 else:
                     kp.append(( attr['shape_attributes']['cy'], attr['shape_attributes']['cx']))
-                
+
                 num_mosquitoes += 1
-            
+
             num_mosquitoes = int(num_mosquitoes/5)
 
             self.add_image(
@@ -161,7 +161,7 @@ class MosquitoesDataset(utils.Dataset):
         image_path = self.image_info[image_id]['path']
         image = skimage.io.imread(image_path)
         return image
-            
+
     def load_keypoints(self, image_id):
         """Load person keypoints for the given image.
 
@@ -186,7 +186,7 @@ class MosquitoesDataset(utils.Dataset):
         # of class IDs that correspond to each channel of the mask.
         for index in range(0, int(info['num_mosquitoes'])):
             class_id = info['cl'][index]
-            
+
             # generate masks
             for m_index in range(0,3):
                 m_index = index*3 + m_index
@@ -253,4 +253,3 @@ if __name__=='__main__':
             learning_rate=config.LEARNING_RATE,\
             epochs=15,\
             layers='heads')
-
