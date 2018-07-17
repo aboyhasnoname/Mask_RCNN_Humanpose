@@ -1,9 +1,4 @@
-
 # coding: utf-8
-
-# In[15]:
-
-
 import json
 import skimage
 import os
@@ -20,7 +15,7 @@ import utils
 import model as modellib
 #import visualize
 from model import log
-dataset_dir = r'C:\Users\Zed_Luz\OneDrive\3-MEE\18-JHU\12-Work\5-MosquitoRecog\7-data'#'/media/jm/000C65DB000784DF/workspace/ws_MaskRCNN/Mask_RCNN/samples/mosquitoes/data/'
+dataset_dir = './data'
 annotations = "via_region_data.json"
 
 class MosquitoesConfig(coco.Config):
@@ -128,14 +123,14 @@ class MosquitoesDataset(utils.Dataset):
                 #print(index,attr)
                 if (index%5==0):
                     #attr['region_attributes'].setdefault('class','1')# if the 'class' is missing, fill out automatically, but this error seldom happens
-                if not 'class' in attr['region_attributes']:
-                    attr['region_attributes'].setdefault('class','1')# if the 'class' is missing, fill out automatically, but this error seldom happens
-                if not attr['region_attributes']['class']:#if the va;ues of 'class' is missing, fill out.
-                    cl.append(str(random.randint(1,2)))
-                if attr['region_attributes']['class']:
-                    cl.append(attr['region_attributes']['class'])
-                if 'y' in attr['shape_attributes']:# eror: if a extral point is marked without sense
-                    bb.append([attr['shape_attributes']['y'], attr['shape_attributes']['x'], attr['shape_attributes']['height'], attr['shape_attributes']['width']])
+                    if not 'class' in attr['region_attributes']:
+                        attr['region_attributes'].setdefault('class','1')# if the 'class' is missing, fill out automatically, but this error seldom happens
+                    if not attr['region_attributes']['class']:#if the va;ues of 'class' is missing, fill out.
+                        cl.append(str(random.randint(1,2)))
+                    if attr['region_attributes']['class']:
+                        cl.append(attr['region_attributes']['class'])
+                    if 'y' in attr['shape_attributes']:# eror: if a extral point is marked without sense
+                        bb.append([attr['shape_attributes']['y'], attr['shape_attributes']['x'], attr['shape_attributes']['height'], attr['shape_attributes']['width']])
 
                 elif (index%5==1):
                     pass
