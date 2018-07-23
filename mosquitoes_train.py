@@ -31,7 +31,7 @@ class MosquitoesConfig(coco.Config):
     IMAGES_PER_GPU = 2
 
     # Uncomment to train on 8 GPUs (default is 1)
-    # GPU_COUNT = 8
+    # GPU_COUNT = 2
 
     # Number of classes (including background)
     # NUM_CLASSES = 1 + 80  # COCO has 80 classes
@@ -39,8 +39,8 @@ class MosquitoesConfig(coco.Config):
 
     NUM_KEYPOINTS = 3
     MINI_MASK_SHAPE = [1024, 1024]
-    MASK_SHAPE = [512, 512]
-    KEYPOINT_MASK_SHAPE = [512,512]
+    MASK_SHAPE = [28, 28]
+    KEYPOINT_MASK_SHAPE = [1024,1024]
     # DETECTION_MAX_INSTANCES = 50
     TRAIN_ROIS_PER_IMAGE = 100
     MAX_GT_INSTANCES = 128
@@ -60,7 +60,7 @@ config.display()
 class MosquitoesDataset(utils.Dataset):
     def __init__(self):
         super().__init__(MosquitoesDataset)
-        num_classes = 2
+        num_classes = 3
         self.task_type = "person_keypoints"
         # the connection between 2 close keypoints
         self._skeleton = []
@@ -255,4 +255,4 @@ if __name__=='__main__':
     model.train(train_dataset_keypoints, val_dataset_keypoints,\
             learning_rate=config.LEARNING_RATE,\
             epochs=15,\
-            layers='heads')
+            layers="heads")
