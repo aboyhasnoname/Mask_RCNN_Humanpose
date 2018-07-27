@@ -79,6 +79,45 @@ def keypoint_to_mask(keypoints,height,width):
 #  Bounding Boxes
 ############################################################
 
+def resize_bboxes(bboxes, new_size, scale, padding):
+    """Resizes a keypoint  using the given scale and padding.
+        Typically, you get the scale and padding from resize_image() to
+        ensure both, the image and the mask, are resized consistently.
+        bboxes: [num_person, 4]
+        scale: mask scaling factor
+        padding: Padding to add to the mask in the form
+                [(top, bottom), (left, right), (0, 0)]
+        """
+    bboxes_shape = np.shape(bboxes)
+    num_person = bboxes_shape[0]
+    for i in range(num_person):
+        x1 = keypoint[i,0]
+        y1 = keypoint[i,1]
+        x2 = keypoint[i,2]
+        y2 = keypoint[i,3]
+        #scale
+        x1 = int(x1*scale+0.5)
+        y1 = int(y1*scale +0.5)
+        if(x1 >=new_size[1]):
+            x1 = new_size[1] -1
+        if(y1>= new_size[0]):
+            y1 = new_size[0] -1
+        x2 = int(x2*scale+0.5)
+        y2 = int(y2*scale +0.5)
+        if(x2 >=new_size[1]):
+            x2 = new_size[1] -1
+        if(y2>= new_size[0]):
+            y2 = new_size[0] -1
+        #padding
+        x1 = x1 + padding[1][0]
+        y1 = y1 + padding[0][0]
+        x2 = x2 + padding[1][0]
+        y2 = y2 + padding[0][0]
+        
+        bboxes[i,:] = [x1, y1, x2, y2]
+
+    return bboxes
+
 def extract_bboxes(mask):
     """Compute bounding boxes from masks.
     mask: [height, width, num_instances]. Mask pixels are either 1 or 0.
@@ -520,8 +559,15 @@ def resize_mask(mask, scale, padding):
             [(top, bottom), (left, right), (0, 0)]
     """
     h, w = mask.shape[:2]
-    mask = scipy.ndimage.zoom(mask, zoom=[scale, scale, 1], order=0)
-    mask = np.pad(mask, padding, mode='constant', constant_values=0)
+    #mask = scipy.ndimage.zoom(mask, zoom=[scale, scale, 1], order=0)
+    #mask = np.pad(mask, padding, mode='constant', constant_values=0)
+
+    mini_mask = np.zeros(mini_shape + (mask.shape[-1],), dtype=bool)
+    for i in range(mask.shape[-1]):
+        m = scipy.misc.imresize(m.astype(float), scale, interp='bilinear')
+        mini_mask[:, :, i] = np.where(m >= 0, 255, 0)
+
+    mask = np.pad(mini_mask, padding, mode='constant', constant_values=0)
     return mask
 
 
@@ -559,6 +605,7 @@ def get_keypoints():
         'left_ankle': 'right_ankle'
     }
     return keypoints, keypoint_flip_map
+
 def flip_keypoints(keypoints, keypoint_flip_map, keypoint_coords, width):
     """Left/right flip keypoint_coords. keypoints and keypoint_flip_map are
     accessible from get_keypoints().
@@ -579,6 +626,7 @@ def flip_keypoints(keypoints, keypoint_flip_map, keypoint_coords, width):
     inds = np.where(flipped_kps[:, :, 2] == 0)
     flipped_kps[inds[0], inds[1], 0] = 0
     return flipped_kps
+
 def resize_keypoints(keypoint, new_size, scale, padding):
     """Resizes a keypoint  using the given scale and padding.
         Typically, you get the scale and padding from resize_image() to
@@ -639,7 +687,8 @@ def minimize_mask(bbox, mask, mini_shape):
         # _positon = np.argmax(m)  # get the index of max in the a
         # m_index, n_index = divmod(_positon, mini_shape[0])
         # print("Max in oringal:", (m_index, n_index), m[m_index, n_index])
-        mini_mask[:, :, i] = np.where(m >= 128, 1, 0)
+        #mini_mask[:, :, i] = np.where(m >= 128, 1, 0)
+        mini_mask[:, :, i] = np.where(m >= 0, 1, 0)
     return mini_mask
 
 # import cv2

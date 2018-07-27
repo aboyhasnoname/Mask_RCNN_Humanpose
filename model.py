@@ -1743,9 +1743,19 @@ def load_image_gt_keypoints(dataset, config, image_id, augment=True,
         padding=config.IMAGE_PADDING)
 
     mask = utils.resize_mask(mask, scale, padding)
-    from skimage.transform import resize
-    mask = resize(mask, (config.MINI_MASK_SHAPE[0], config.MINI_MASK_SHAPE[1], -1))
+    #from skimage.transform import resize
+    #mask = resize(mask, (config.MINI_MASK_SHAPE[0], config.MINI_MASK_SHAPE[1], -1))
     keypoints = utils.resize_keypoints(keypoints, image.shape[:2], scale, padding)
+
+    # Bounding boxes. Note that some boxes might be all zeros
+    # if the corresponding mask got cropped out.
+    # bbox: [num_instances, (y1, x1, y2, x2)]
+    # print("mask shape:",np.shape(mask))
+    # print("keypoint mask shape:",np.shape(keypoint_mask))
+    # bbox = utils.extract_bboxes(mask)
+    bbox = dataset.load_bbox(image_id)
+    bbox = utils.resize_bboxes(bbox, image.shape[:2], scale, padding)
+
 
     # Random horizontal flips.
 
@@ -1761,8 +1771,9 @@ def load_image_gt_keypoints(dataset, config, image_id, augment=True,
     # bbox: [num_instances, (y1, x1, y2, x2)]
     # print("mask shape:",np.shape(mask))
     # print("keypoint mask shape:",np.shape(keypoint_mask))
-#     bbox = utils.extract_bboxes(mask)
-    bbox = dataset.load_bbox(image_id)
+    # bbox = utils.extract_bboxes(mask)
+    # bbox = dataset.load_bbox(image_id)
+    
 
     # Active classes
     # Different datasets have different classes, so track the
@@ -1774,7 +1785,7 @@ def load_image_gt_keypoints(dataset, config, image_id, augment=True,
 #     active_class_ids[source_class_ids] = 1
 
     # Resize masks to smaller size to reduce memory usage
-    use_mini_mask = False
+
     if use_mini_mask:
         mask = utils.minimize_mask(bbox, mask, config.MINI_MASK_SHAPE)
 

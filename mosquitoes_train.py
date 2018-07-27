@@ -196,7 +196,7 @@ class MosquitoesDataset(utils.Dataset):
                 m = np.zeros((info['height'], info['width']), dtype=np.int8)
                 x = info['key_points'][m_index][0]
                 y = info['key_points'][m_index][1]
-                m[x,y] = 1
+                m[x,y] = 255
                 instance_masks.append(m)
             #load keypoints
             keypoints = info["key_points"]
@@ -223,7 +223,6 @@ class MosquitoesDataset(utils.Dataset):
         return info["path"]
 
 
-# In[16]:
 if __name__=='__main__':
 
     train_dataset_keypoints = MosquitoesDataset()
@@ -233,10 +232,6 @@ if __name__=='__main__':
     val_dataset_keypoints = MosquitoesDataset()
     val_dataset_keypoints.load_dataset(dataset_dir, "val")
     val_dataset_keypoints.prepare()
-
-
-# In[ ]:
-
 
     ROOT_DIR = os.getcwd()
     MODEL_DIR = os.path.join(ROOT_DIR, "logs")
