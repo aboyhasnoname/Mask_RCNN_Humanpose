@@ -1743,7 +1743,8 @@ def load_image_gt_keypoints(dataset, config, image_id, augment=True,
         padding=config.IMAGE_PADDING)
 
     mask = utils.resize_mask(mask, scale, padding)
-
+    from skimage.transform import resize
+    mask = resize(mask, (config.MINI_MASK_SHAPE[0], config.MINI_MASK_SHAPE[1], -1))
     keypoints = utils.resize_keypoints(keypoints, image.shape[:2], scale, padding)
 
     # Random horizontal flips.
@@ -3050,7 +3051,7 @@ class MaskRCNN():
             validation_steps=self.config.VALIDATION_STEPS,
             max_queue_size=100,
             workers=workers,
-            use_multiprocessing=False,
+            use_multiprocessing=True,
         )
         self.epoch = max(self.epoch, epochs)
 

@@ -28,21 +28,21 @@ class MosquitoesConfig(coco.Config):
 
     # We use a GPU with 12GB memory, which can fit two images.
     # Adjust down if you use a smaller GPU.
-    IMAGES_PER_GPU = 2
+    IMAGES_PER_GPU = 1
 
     # Uncomment to train on 8 GPUs (default is 1)
-    # GPU_COUNT = 2
+    GPU_COUNT = 2
 
     # Number of classes (including background)
     # NUM_CLASSES = 1 + 80  # COCO has 80 classes
     NUM_CLASSES = 1 + 2  # Person and background
 
     NUM_KEYPOINTS = 3
-    MINI_MASK_SHAPE = [1024, 1024]
+    MINI_MASK_SHAPE = [256, 256]
     MASK_SHAPE = [28, 28]
-    KEYPOINT_MASK_SHAPE = [1024,1024]
+    KEYPOINT_MASK_SHAPE = [28,28]
     # DETECTION_MAX_INSTANCES = 50
-    TRAIN_ROIS_PER_IMAGE = 100
+    TRAIN_ROIS_PER_IMAGE = 50
     MAX_GT_INSTANCES = 128
     RPN_TRAIN_ANCHORS_PER_IMAGE = 150
     USE_MINI_MASK = True
