@@ -1577,7 +1577,7 @@ def test_keypoint_mrcnn_mask_loss_graph(target_keypoints, target_keypoint_weight
 
 
 
-def keypoint_mrcnn_mask_loss_graph(target_keypoints, target_keypoint_weights, target_class_ids, pred_keypoints_logit, weight_loss = True, mask_shape=[56,56],number_point=17):
+def keypoint_mrcnn_mask_loss_graph(target_keypoints, target_keypoint_weights, target_class_ids, pred_keypoints_logit, weight_loss = True, mask_shape=[56,56],number_point=3):
     """Mask softmax cross-entropy loss for the keypoint head.
 
     target_keypoints: [batch, num_rois, num_keypoints].
@@ -1733,6 +1733,7 @@ def load_image_gt_keypoints(dataset, config, image_id, augment=True,
     # mask, class_ids = dataset.load_mask(image_id)
     shape = image.shape
     keypoints, mask, class_ids = dataset.load_keypoints(image_id)
+
     assert (config.NUM_KEYPOINTS == keypoints.shape[1])
 
     image, window, scale, padding = utils.resize_image(
@@ -1740,36 +1741,39 @@ def load_image_gt_keypoints(dataset, config, image_id, augment=True,
         min_dim=config.IMAGE_MIN_DIM,
         max_dim=config.IMAGE_MAX_DIM,
         padding=config.IMAGE_PADDING)
+
     mask = utils.resize_mask(mask, scale, padding)
+
     keypoints = utils.resize_keypoints(keypoints, image.shape[:2], scale, padding)
 
     # Random horizontal flips.
 
-    if augment:
-        if random.randint(0, 1):
-            image = np.fliplr(image)
-            mask = np.fliplr(mask)
-            keypoint_names,keypoint_flip_map = utils.get_keypoints()
-            keypoints = utils.flip_keypoints(keypoint_names,keypoint_flip_map,keypoints, image.shape[1])
+#     if augment:
+#         if random.randint(0, 1):
+#             image = np.fliplr(image)
+#             mask = np.fliplr(mask)
+#             keypoint_names,keypoint_flip_map = utils.get_keypoints()
+#             keypoints = utils.flip_keypoints(keypoint_names,keypoint_flip_map,keypoints, image.shape[1])
 
     # Bounding boxes. Note that some boxes might be all zeros
     # if the corresponding mask got cropped out.
     # bbox: [num_instances, (y1, x1, y2, x2)]
     # print("mask shape:",np.shape(mask))
     # print("keypoint mask shape:",np.shape(keypoint_mask))
-    bbox = utils.extract_bboxes(mask)
-
+#     bbox = utils.extract_bboxes(mask)
+    bbox = dataset.load_bbox(image_id)
 
     # Active classes
     # Different datasets have different classes, so track the
     # classes supported in the dataset of this image.
-    active_class_ids = np.zeros([dataset.num_classes], dtype=np.int32)
+    active_class_ids = np.ones([dataset.num_classes], dtype=np.int32)
     #all the class ids in the source
     # in keypoint detection task, source_class_ids = [0,1]
-    source_class_ids = dataset.source_class_ids[dataset.image_info[image_id]["source"]]
-    active_class_ids[source_class_ids] = 1
+#     source_class_ids = dataset.source_class_ids[dataset.image_info[image_id]["source"]]
+#     active_class_ids[source_class_ids] = 1
 
     # Resize masks to smaller size to reduce memory usage
+    use_mini_mask = False
     if use_mini_mask:
         mask = utils.minimize_mask(bbox, mask, config.MINI_MASK_SHAPE)
 
@@ -2514,7 +2518,7 @@ class MaskRCNN():
         self.model_dir = model_dir
         self.set_log_dir()
         self.keras_model = self.build(mode=mode, config=config)
-
+        print(self.keras_model.layers)
     def build(self, mode, config):
         """Build Mask R-CNN architecture.
             input_shape: The shape of the input image.
@@ -2739,8 +2743,8 @@ class MaskRCNN():
                        rpn_rois, output_rois,
                        rpn_class_loss, rpn_bbox_loss, class_loss, bbox_loss, keypoint_loss, mask_loss]
                        # +  test_target_keypoint_mask for test the keypoint loss graph
-
             model = KM.Model(inputs, outputs, name='mask_keypoint_mrcnn')
+            # print(model.summary())
         else:
             # Network Heads
             # Proposal classifier and BBox regressor heads
@@ -2782,7 +2786,7 @@ class MaskRCNN():
         if config.GPU_COUNT > 1:
             from parallel_model import ParallelModel
             model = ParallelModel(model, config.GPU_COUNT)
-
+            print("use multiple GPUs")
         return model
 
     def find_last(self):
@@ -2880,7 +2884,7 @@ class MaskRCNN():
             if layer.output in self.keras_model.losses:
                 continue
             self.keras_model.add_loss(
-                tf.reduce_mean(layer.output, keep_dims=True))
+                tf.reduce_mean(layer.output, keepdims=True))
 
         # Add L2 Regularization
         # Skip gamma and beta weights of batch normalization layers.
@@ -2900,7 +2904,7 @@ class MaskRCNN():
             layer = self.keras_model.get_layer(name)
             self.keras_model.metrics_names.append(name)
             self.keras_model.metrics_tensors.append(tf.reduce_mean(
-                layer.output, keep_dims=True))
+                layer.output, keepdims=True))
 
     def set_trainable(self, layer_regex, keras_model=None, indent=0, verbose=1):
         """Sets model layers as trainable if their names match
@@ -3046,7 +3050,7 @@ class MaskRCNN():
             validation_steps=self.config.VALIDATION_STEPS,
             max_queue_size=100,
             workers=workers,
-            use_multiprocessing=True,
+            use_multiprocessing=False,
         )
         self.epoch = max(self.epoch, epochs)
 
