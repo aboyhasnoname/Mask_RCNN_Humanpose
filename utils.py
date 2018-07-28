@@ -91,10 +91,10 @@ def resize_bboxes(bboxes, new_size, scale, padding):
     bboxes_shape = np.shape(bboxes)
     num_person = bboxes_shape[0]
     for i in range(num_person):
-        x1 = keypoint[i,0]
-        y1 = keypoint[i,1]
-        x2 = keypoint[i,2]
-        y2 = keypoint[i,3]
+        x1 = bboxes[i,0]
+        y1 = bboxes[i,1]
+        x2 = bboxes[i,2]
+        y2 = bboxes[i,3]
         #scale
         x1 = int(x1*scale+0.5)
         y1 = int(y1*scale +0.5)
@@ -109,13 +109,12 @@ def resize_bboxes(bboxes, new_size, scale, padding):
         if(y2>= new_size[0]):
             y2 = new_size[0] -1
         #padding
-        x1 = x1 + padding[1][0]
-        y1 = y1 + padding[0][0]
-        x2 = x2 + padding[1][0]
-        y2 = y2 + padding[0][0]
+        x1 = x1 + padding[0][0]
+        y1 = y1 + padding[1][0]
+        x2 = x2 + padding[0][0]
+        y2 = y2 + padding[1][0]
         
         bboxes[i,:] = [x1, y1, x2, y2]
-
     return bboxes
 
 def extract_bboxes(mask):
@@ -561,10 +560,10 @@ def resize_mask(mask, scale, padding):
     h, w = mask.shape[:2]
     #mask = scipy.ndimage.zoom(mask, zoom=[scale, scale, 1], order=0)
     #mask = np.pad(mask, padding, mode='constant', constant_values=0)
-
-    mini_mask = np.zeros(mini_shape + (mask.shape[-1],), dtype=bool)
+ 
+    mini_mask = np.zeros( (round(h*scale), round(w*scale), mask.shape[-1]), dtype=bool)
     for i in range(mask.shape[-1]):
-        m = scipy.misc.imresize(m.astype(float), scale, interp='bilinear')
+        m = scipy.misc.imresize(mask[:,:,i].astype(float), scale, interp='bilinear')
         mini_mask[:, :, i] = np.where(m >= 0, 255, 0)
 
     mask = np.pad(mini_mask, padding, mode='constant', constant_values=0)
@@ -652,8 +651,8 @@ def resize_keypoints(keypoint, new_size, scale, padding):
             if(y>= new_size[0]):
                 y = new_size[0] -1
             #padding
-            x = x + padding[1][0]
-            y = y + padding[0][0]
+            x = x + padding[0][0]
+            y = y + padding[1][0]
             keypoint[i,j,:2] = [x,y]
 
     # keypoint[:,:,0] = np.array(keypoint[:,:,0]*scale + 0.5).astype(int)
@@ -676,7 +675,7 @@ def minimize_mask(bbox, mask, mini_shape):
 
     See inspect_data.ipynb notebook for more details.
     """
-    mini_mask = np.zeros(mini_shape + (mask.shape[-1],), dtype=bool)
+    mini_mask = np.zeros(tuple(mini_shape) + (mask.shape[-1],), dtype=bool)
     for i in range(mask.shape[-1]):
         m = mask[:, :, i]
         y1, x1, y2, x2 = bbox[i][:4]

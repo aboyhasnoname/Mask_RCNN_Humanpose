@@ -40,7 +40,7 @@ class MosquitoesConfig(coco.Config):
     NUM_KEYPOINTS = 3
     MINI_MASK_SHAPE = [256, 256]
     MASK_SHAPE = [28, 28]
-    KEYPOINT_MASK_SHAPE = [28,28]
+    KEYPOINT_MASK_SHAPE = [128,128]
     # DETECTION_MAX_INSTANCES = 50
     TRAIN_ROIS_PER_IMAGE = 50
     MAX_GT_INSTANCES = 128
@@ -128,7 +128,7 @@ class MosquitoesDataset(utils.Dataset):
                     if not attr['region_attributes']['class']:#if the va;ues of 'class' is missing, fill out.
                         cl.append(str(random.randint(1,2)))
                     if attr['region_attributes']['class']:
-                        cl.append(attr['region_attributes']['class'])
+                        cl.append(int(attr['region_attributes']['class']))
                     if 'y' in attr['shape_attributes']:# eror: if a extral point is marked without sense
                         bb.append([attr['shape_attributes']['y'], attr['shape_attributes']['x'], attr['shape_attributes']['height'], attr['shape_attributes']['width']])
 
@@ -190,14 +190,15 @@ class MosquitoesDataset(utils.Dataset):
         for index in range(0, int(info['num_mosquitoes'])):
             class_id = info['cl'][index]
 
+            m = np.zeros((info['height'], info['width']), dtype=np.uint8)
             # generate masks
             for m_index in range(0,3):
-                m_index = index*3 + m_index
-                m = np.zeros((info['height'], info['width']), dtype=np.int8)
+                #m_index = index*3 + m_index
+                #m = np.zeros((info['height'], info['width']), dtype=np.uint8)
                 x = info['key_points'][m_index][0]
                 y = info['key_points'][m_index][1]
                 m[x,y] = 255
-                instance_masks.append(m)
+            instance_masks.append(m)
             #load keypoints
             keypoints = info["key_points"]
             keypoints = np.reshape(keypoints,(-1,2))
