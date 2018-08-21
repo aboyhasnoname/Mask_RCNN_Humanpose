@@ -31,7 +31,7 @@ class MosquitoesConfig(coco.Config):
     IMAGES_PER_GPU = 1
 
     # Uncomment to train on 8 GPUs (default is 1)
-    GPU_COUNT = 2
+    #GPU_COUNT = 2
 
     # Number of classes (including background)
     # NUM_CLASSES = 1 + 80  # COCO has 80 classes
@@ -49,7 +49,7 @@ class MosquitoesConfig(coco.Config):
     MASK_POOL_SIZE = 14
     KEYPOINT_MASK_POOL_SIZE = 7
     LEARNING_RATE = 0.002
-    STEPS_PER_EPOCH = 1000
+    STEPS_PER_EPOCH = 10
     WEIGHT_LOSS = True
     KEYPOINT_THRESHOLD = 0.005
 
@@ -251,4 +251,4 @@ if __name__=='__main__':
     model.train(train_dataset_keypoints, val_dataset_keypoints,\
             learning_rate=config.LEARNING_RATE,\
             epochs=15,\
-            layers="heads")
+            layers="all")

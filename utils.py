@@ -548,27 +548,43 @@ def resize_image(image, min_dim=None, max_dim=None, padding=False):
     return image, window, scale, padding
 
 
-def resize_mask(mask, scale, padding):
+#def resize_mask(mask, scale, padding):
+#    """Resizes a mask using the given scale and padding.
+#    Typically, you get the scale and padding from resize_image() to
+#    ensure both, the image and the mask, are resized consistently.
+#
+#    scale: mask scaling factor
+#    padding: Padding to add to the mask in the form
+#            [(top, bottom), (left, right), (0, 0)]
+#    """
+#
+#    h, w = mask.shape[:2]
+#    #mask = scipy.ndimage.zoom(mask, zoom=[scale, scale, 1], order=0)
+#    #mask = np.pad(mask, padding, mode='constant', constant_values=0)
+
+#    mini_mask = np.zeros( (round(h*scale), round(w*scale), mask.shape[-1]), dtype=bool)
+#    for i in range(mask.shape[-1]):
+#        m = scipy.misc.imresize(mask[:,:,i].astype(float), scale, interp='bilinear')
+#        mini_mask[:, :, i] = np.where(m >= 0, 255, 0)
+
+#    mask = np.pad(mini_mask, padding, mode='constant', constant_values=0)
+#    return mask
+
+def resize_mask(mask, keypoints, shape, scale, padding):
     """Resizes a mask using the given scale and padding.
     Typically, you get the scale and padding from resize_image() to
     ensure both, the image and the mask, are resized consistently.
-
     scale: mask scaling factor
     padding: Padding to add to the mask in the form
             [(top, bottom), (left, right), (0, 0)]
     """
-    h, w = mask.shape[:2]
-    #mask = scipy.ndimage.zoom(mask, zoom=[scale, scale, 1], order=0)
-    #mask = np.pad(mask, padding, mode='constant', constant_values=0)
- 
-    mini_mask = np.zeros( (round(h*scale), round(w*scale), mask.shape[-1]), dtype=bool)
+    
+    mini_mask = np.zeros(tuple(shape) + (mask.shape[-1],), dtype=bool)
     for i in range(mask.shape[-1]):
-        m = scipy.misc.imresize(mask[:,:,i].astype(float), scale, interp='bilinear')
-        mini_mask[:, :, i] = np.where(m >= 0, 255, 0)
-
-    mask = np.pad(mini_mask, padding, mode='constant', constant_values=0)
-    return mask
-
+        for j in range(keypoints.shape[1]):
+            x,y = keypoints[i,j,:2]
+            mini_mask[x,y,i] = 1
+    return mini_mask
 
 def get_keypoints():
     """Get the COCO keypoints and their left/right flip coorespondence map."""
@@ -687,7 +703,7 @@ def minimize_mask(bbox, mask, mini_shape):
         # m_index, n_index = divmod(_positon, mini_shape[0])
         # print("Max in oringal:", (m_index, n_index), m[m_index, n_index])
         #mini_mask[:, :, i] = np.where(m >= 128, 1, 0)
-        mini_mask[:, :, i] = np.where(m >= 0, 1, 0)
+        mini_mask[:, :, i] = np.where(m >= 50, 1, 0)
     return mini_mask
 
 # import cv2
