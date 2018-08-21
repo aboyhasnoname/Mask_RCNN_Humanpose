@@ -243,12 +243,12 @@ if __name__=='__main__':
     model = modellib.MaskRCNN(mode="training", model_dir=MODEL_DIR, config=config)
 
 # Load weights trained on MS-COCO
-    #model.load_weights(COCO_MODEL_PATH, by_name=True,exclude=["mrcnn_class_logits", "mrcnn_bbox_fc", "mrcnn_bbox", "mrcnn_mask"])
-    #print("Loading weights from ", COCO_MODEL_PATH)
+    model.load_weights(COCO_MODEL_PATH, by_name=True,exclude=["mrcnn_class_logits", "mrcnn_bbox_fc", "mrcnn_bbox", "mrcnn_mask"])
+    print("Loading weights from ", COCO_MODEL_PATH)
 
 # Training - Stage 1
     print("Train heads")
     model.train(train_dataset_keypoints, val_dataset_keypoints,\
             learning_rate=config.LEARNING_RATE,\
             epochs=15,\
-            layers="all")
+            layers="heads")
