@@ -15,7 +15,7 @@ COCO_MODEL_PATH = os.path.join(ROOT_DIR, "mask_rcnn_coco.h5")
 # MS COCO Dataset
 import coco
 config = coco.CocoConfig()
-COCO_DIR = "D:/Github/FastMaskRCNN/data/coco"  # TODO: enter value here
+COCO_DIR = "/home/tda1/jm/original/data/"  # TODO: enter value here
 # Load dataset
 assert config.NAME == "coco"
 # Training dataset

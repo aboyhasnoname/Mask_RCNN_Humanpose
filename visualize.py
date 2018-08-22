@@ -17,7 +17,7 @@ import matplotlib.patches as patches
 import matplotlib.lines as lines
 from matplotlib.patches import Polygon
 import IPython.display
-import cv2
+# import cv2
 import utils
 
 
@@ -364,9 +364,9 @@ def display_keypoints(image, boxes, keypoints, class_ids, class_names,
                     Joint_end = keypoints[i][end_index]
                 # both are Annotated
                 # Joint:(x,y,v)
-                if ((Joint_start[2] != 0) & (Joint_end[2] != 0)):
+#                 if ((Joint_start[2] != 0) & (Joint_end[2] != 0)):
                     # print(color)
-                    cv2.line(skeleton_image, tuple(Joint_start[:2]), tuple(Joint_end[:2]), limb_colors[limb_index],5)
+#                     cv2.line(skeleton_image, tuple(Joint_start[:2]), tuple(Joint_end[:2]), limb_colors[limb_index],5)
     ax.imshow(skeleton_image.astype(np.uint8))
     plt.show()
 
