@@ -106,6 +106,19 @@ class MosquitoesDataset(utils.Dataset):
         # annotations. Skip unannotated images.
         annotations = [a for a in annotations if a['regions']]
 
+        #remove wrong annotations
+        remove_index = 0
+        for index, a in enumerate(annotations):
+            if a['filename']=='8_0083_4.jpg':
+                remove_index = index
+        annotations.pop(remove_index)
+
+        if subset=='train':
+            annotations = annotations[:360]
+        else:
+            annotations = annotations[360:]
+        print(subset,' num_images: ',len(annotations))
+
         # Add images
         for a in annotations:
             # load_mask() needs the image size to convert polygons to masks.
